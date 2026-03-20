@@ -64,6 +64,28 @@ def wait_and_click(image_path, timeout=60, confidence=0.85, is_double_click=Fals
         
         time.sleep(0.5)
 
+def wait_until_gone(image_path, timeout=30, confidence=0.85):
+    """
+    等待畫面上的目標圖片消失（確認頁面已切換）。
+    """
+    print(f"⏳ 等待 {image_path} 從畫面消失（確認頁面切換中）...")
+    start_time = time.time()
+    while True:
+        if time.time() - start_time > timeout:
+            print(f"⚠️ 等了 {timeout} 秒，{image_path} 仍然存在，繼續往下執行。")
+            return
+        try:
+            location = pyautogui.locateCenterOnScreen(image_path, confidence=confidence)
+            if location is None:
+                print(f"✅ {image_path} 已消失，頁面切換完成！")
+                return
+        except (pyautogui.ImageNotFoundException, pyscreeze.ImageNotFoundException):
+            print(f"✅ {image_path} 已消失，頁面切換完成！")
+            return
+        except Exception:
+            pass
+        time.sleep(0.5)
+
 def wait_and_click_all(image_path, timeout=60, confidence=0.85):
     """
     智慧等待機制：尋找畫面上「所有」符合圖片的目標，並一個一個點擊。
@@ -142,11 +164,12 @@ if __name__ == "__main__":
             
             if wait_and_click("check02.png", timeout=30, confidence=0.85):
                 print("✅ 成功點選正式簽到！")
-                
+
+                wait_until_gone("check02.png", timeout=30, confidence=0.85)
                 print("⏳ 等待健康調查表畫面載入...")
-                time.sleep(2) 
-                
-                if wait_and_click_all("check03.png", timeout=30, confidence=0.8):
+                time.sleep(2)
+
+                if wait_and_click_all("check03.png", timeout=30, confidence=0.9):
                     print("✅ ✅ 成功點選所有「否」！自動簽到流程圓滿達成！")
                     
                     print("⏳ 準備點選最後的送出按鈕...")
