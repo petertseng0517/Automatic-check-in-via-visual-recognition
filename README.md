@@ -24,24 +24,22 @@ flowchart TD
     A([go.bat 啟動]) --> B[loginNotes.py]
 
     B --> C{今日請假?}
-    C -->|是| D[中止簽到]
+    C -->|是| D[中止，不執行任何後續步驟]
     C -->|否| E[開啟 checkin.url]
 
     E --> F[輸入密碼登入]
     F --> G[點擊正常簽到]
     G --> H[點選所有否\n健康調查]
 
-    H --> I[點擊確定送出]
+    H --> M[online.py\n子程序呼叫]
+    M --> N[開啟 online.url]
+    N --> O[點擊登入按鈕]
+    O --> P[LINE 通知\n線上登入完成 + 時間]
+
+    P --> I[點擊確定送出\n完成 Notes 簽到]
     I --> J{簽到成功?}
     J -->|失敗| K[LINE 通知失敗原因]
     J -->|成功| L[LINE 通知簽到完成]
-
-    D --> M[online.py]
-    L --> M
-
-    M --> N[開啟 online.url]
-    N --> O[點擊登入按鈕]
-    O --> P[LINE 通知\n簽到順利完成 + 時間]
 ```
 
 ---
@@ -90,8 +88,9 @@ LINE_USER_ID=你的LINE User ID（U開頭的字串）
 
 | 方式 | 說明 |
 |------|------|
-| 雙擊 `go.bat` | 依序執行兩支腳本（顯示視窗） |
+| 雙擊 `go.bat` | 執行 `loginNotes.py`，內部自動呼叫 `online.py`（顯示視窗） |
 | 雙擊 `run_hidden.vbs` | 靜默背景執行，不顯示視窗 |
+| 雙擊 `auto-online.bat` | 單獨執行線上系統登入（不含 Notes 簽到） |
 | `python loginNotes.py` | 單獨執行簽到（開發測試用） |
 | `python online.py` | 單獨執行線上登入（開發測試用） |
 
@@ -108,7 +107,7 @@ LINE_USER_ID=你的LINE User ID（U開頭的字串）
 2026/02/28
 ```
 
-請假日當天，`loginNotes.py` 會自動中止不簽到，但 `online.py` 仍會繼續執行。
+請假日當天，`loginNotes.py` 會在請假判斷後立即中止，`online.py` 也不會執行。若需要在請假日單獨執行線上系統登入，請手動雙擊 `auto-online.bat`。
 
 ---
 
@@ -116,10 +115,11 @@ LINE_USER_ID=你的LINE User ID（U開頭的字串）
 
 ```
 autoRPA/
-├── loginNotes.py       # Lotus Notes 自動簽到腳本
+├── loginNotes.py       # Lotus Notes 自動簽到腳本（Step 4.5 內部呼叫 online.py）
 ├── online.py           # 線上系統自動登入腳本
 ├── detect.py           # 滑鼠座標偵測工具（校準用）
-├── go.bat              # 主啟動批次檔
+├── go.bat              # 主啟動批次檔（僅執行 loginNotes.py）
+├── auto-online.bat     # 單獨執行線上系統登入批次檔
 ├── run_hidden.vbs      # 靜默啟動腳本
 ├── leave.csv           # 請假日期清單
 ├── checkin.url         # Lotus Notes 簽到表單捷徑
@@ -153,4 +153,4 @@ autoRPA/
 | Failsafe | 執行中將滑鼠移至螢幕左上角 (0, 0) 可立即中止程式 |
 | 逾時保護 | 每個步驟設有 10–60 秒逾時，避免無限等待 |
 | 信心閾值 | 圖片比對需達 85–90% 相似度才執行點擊，防止誤觸 |
-| 失敗中止 | `loginNotes.py` 任一步驟失敗時以結束碼 1 退出，`go.bat` 不繼續執行 `online.py` |
+| 失敗中止 | `loginNotes.py` 任一步驟失敗時以結束碼 1 退出；`online.py` 失敗時同樣中止並跳過後續 Notes 送出 |

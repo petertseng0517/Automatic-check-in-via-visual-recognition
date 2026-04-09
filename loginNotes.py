@@ -1,6 +1,7 @@
 import os
 import sys
 import csv
+import subprocess
 from datetime import datetime
 import pyautogui
 import time
@@ -161,6 +162,16 @@ if __name__ == "__main__":
         sys.exit(1)
     print("✅ 所有「否」已點選完畢！")
     time.sleep(1)
+
+    # Step 4.5：Step 4 完成後執行 online.py
+    print("🌐 Step 4 完成，開始執行 online.py...")
+    try:
+        subprocess.run([sys.executable, "online.py"], check=True)
+        print("✅ online.py 執行完成。")
+    except subprocess.CalledProcessError as e:
+        print(f"❌ online.py 執行失敗，錯誤碼：{e.returncode}")
+        notify_line("❌ 簽到失敗：online.py 執行失敗")
+        sys.exit(1)
 
     # Step 5：點擊確定送出
     if not wait_and_click("submit_btn.png", timeout=10, confidence=0.85):
