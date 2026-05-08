@@ -51,7 +51,7 @@ def wait_and_click(image_path, timeout=60, confidence=0.85):
             return False
 
         try:
-            location = pyautogui.locateCenterOnScreen(image_path, confidence=confidence)
+            location = pyautogui.locateCenterOnScreen(image_path, confidence=confidence, grayscale=True)
             if location is not None:
                 print(f"🎯 找到了！座標：{location}")
                 time.sleep(0.5)
