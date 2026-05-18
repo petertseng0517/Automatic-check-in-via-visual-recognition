@@ -40,7 +40,7 @@ def notify_line(message):
         pass
 
 
-def wait_and_click(image_path, timeout=60, confidence=0.85):
+def wait_and_click(image_path, timeout=60, confidence=0.85, grayscale=True):
     """持續尋找畫面上的單一目標圖片，找到就點擊。"""
     print(f"👀 尋找：{image_path} ...")
     start_time = time.time()
@@ -51,7 +51,7 @@ def wait_and_click(image_path, timeout=60, confidence=0.85):
             return False
 
         try:
-            location = pyautogui.locateCenterOnScreen(image_path, confidence=confidence, grayscale=True)
+            location = pyautogui.locateCenterOnScreen(image_path, confidence=confidence, grayscale=grayscale)
             if location is not None:
                 print(f"🎯 找到了！座標：{location}")
                 time.sleep(0.5)
@@ -78,8 +78,8 @@ if __name__ == "__main__":
         sys.exit()
     time.sleep(5)
 
-    # Step 2：點擊登入按鈕
-    if not wait_and_click("login-online.png", timeout=30, confidence=0.85):
+    # Step 2：點擊登入按鈕（彩色比對 + 高門檻，避免誤判）
+    if not wait_and_click("login-online.png", timeout=30, confidence=0.90, grayscale=False):
         print("❌ 找不到登入按鈕，程式結束。")
         sys.exit()
     print("✅ 已點擊登入按鈕！")

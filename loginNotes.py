@@ -76,7 +76,7 @@ def wait_and_click(image_path, timeout=60, confidence=0.85):
         time.sleep(0.5)
 
 
-def wait_and_click_all(image_path, timeout=60, confidence=0.85):
+def wait_and_click_all(image_path, timeout=60, confidence=0.85, region=None):
     """持續尋找畫面上所有符合的目標圖片，逐一點擊。"""
     print(f"👀 尋找所有：{image_path} ...")
     start_time = time.time()
@@ -87,7 +87,7 @@ def wait_and_click_all(image_path, timeout=60, confidence=0.85):
             return False
 
         try:
-            all_locations = list(pyautogui.locateAllOnScreen(image_path, confidence=confidence, grayscale=True))
+            all_locations = list(pyautogui.locateAllOnScreen(image_path, confidence=confidence, grayscale=True, region=region))
 
             if all_locations:
                 print(f"🎯 找到 {len(all_locations)} 個目標，準備批次點擊...")
@@ -155,8 +155,10 @@ if __name__ == "__main__":
     print("✅ 已點擊正常簽到！")
     time.sleep(2)
 
-    # Step 4：點選所有「否」
-    if not wait_and_click_all("no.png", timeout=30, confidence=0.90):
+    # Step 4：點選所有「否」（限制搜尋區域，排除工具列 / 標題列，避免誤匹配）
+    _sw, _sh = pyautogui.size()
+    _no_region = (0, 300, _sw, _sh - 300)
+    if not wait_and_click_all("no.png", timeout=30, confidence=0.90, region=_no_region):
         print("❌ 找不到健康調查表的否選項，程式結束。")
         notify_line("❌ 簽到失敗：找不到健康調查否選項")
         sys.exit(1)
